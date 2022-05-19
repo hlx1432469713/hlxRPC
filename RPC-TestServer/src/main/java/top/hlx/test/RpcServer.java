@@ -3,6 +3,7 @@ package top.hlx.test;
 import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.hlx.rpc.handler.RequestHandler;
 import top.hlx.rpc.registry.ServiceRegistry;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ public class RpcServer {
     private int maximumPoolSize;//线程池中允许的最大线程数
     private long keepAliveTime;//超时限制时间
     private BlockingQueue<Runnable> workingQueue;//阻塞队列
+    private RequestHandler requesthandler = new RequestHandler();
     private ServiceRegistry serviceRegistry;
 
     private static final Logger logger = LoggerFactory.getLogger(RpcServer.class);
@@ -57,13 +59,14 @@ public class RpcServer {
     public void start(int port){
         try {
             ServerSocket serverSocket = new ServerSocket(port);
-            logger.info("服务器正在启动");
+            logger.info("服务器正在启动.......");
             while (serverSocket.accept() != null){
                 logger.info("消费者连接：{}:{}" + serverSocket.accept().getInetAddress(),port);
-                threadPool.execute(new WorkerThread(serverSocket.accept(),serviceRegistry));
+                threadPool.execute(new RequesthandlerThread(serverSocket.accept(),serviceRegistry,requesthandler));
             }
+            threadPool.shutdown();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("服务器启动时有错误发生:", e);
         }
     }
 }

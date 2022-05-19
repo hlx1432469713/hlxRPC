@@ -2,6 +2,8 @@ package top.hlx.test;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.hlx.rpc.enumeration.enumeration.RpcError;
+import top.hlx.rpc.enumeration.exception.RpcException;
 import top.hlx.rpc.registry.ServiceRegistry;
 
 
@@ -40,7 +42,7 @@ public class DefaultServiceRegistry implements ServiceRegistry {
     public Object getService(String serviceName) {
         Object service = serviceMap.get(serviceName);
         if (service == null)
-            return null;
+            return new RpcException(RpcError.SERVICE_NOT_FOUND);
         else
             return service;
     }
