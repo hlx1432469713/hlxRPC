@@ -2,6 +2,7 @@ package top.hlx.rpc;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 
 import java.io.Serializable;
@@ -15,6 +16,7 @@ import java.io.Serializable;
  *   @NoArgsConstructor ： 注在类上，提供类的无参构造
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class HelloObject implements Serializable {
     private Integer id;

@@ -1,16 +1,16 @@
 package top.hlx.rpc.registry;
 
-
+import java.net.InetSocketAddress;
 
 /**
- * 服务的容器，能够通过该容器创建多个服务，同时也能根据服务名称，获取相对应服务的信息
- * 服务注册表
+ * 往服务注册中心注册服务接口
  */
 public interface ServiceRegistry {
     /**
-     * 注册创建服务
+     * 将服务的名称(serviceName)和地址(InetSocketAddress)注册进服务注册中心
+     * @param serviceName
+     * @param inetSocketAddress
      */
-    <T> void regist(T service) throws Exception;
-    Object getService(String serviceName);
+    void register(String serviceName, InetSocketAddress inetSocketAddress);
 
 }

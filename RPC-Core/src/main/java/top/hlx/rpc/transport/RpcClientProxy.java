@@ -1,13 +1,19 @@
 package top.hlx.rpc.transport;
 
 import lombok.Data;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.hlx.rpc.enumeration.entity.RpcRequest;
 import top.hlx.rpc.enumeration.entity.RpcResponse;
+import top.hlx.rpc.enumeration.util.RpcMessageChecker;
+import top.hlx.rpc.transport.netty.client.NettyClient;
 
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 客户端代理实例，用于客户端访问服务端
@@ -23,19 +29,13 @@ import java.lang.reflect.Proxy;
  */
 @Data
 public class RpcClientProxy implements InvocationHandler {
-    /**
-     * IP地址
-     */
-    private String host;
 
-    /**
-     * 端口号
-     */
-    private int port;
+    private static final Logger logger = LoggerFactory.getLogger(RpcClientProxy.class);
 
-    public RpcClientProxy(String host, int port) {
-        this.host = host;
-        this.port = port;
+    private final RpcClient client;
+
+    public RpcClientProxy(RpcClient client) {
+        this.client = client;
     }
 
     /**
@@ -52,13 +52,26 @@ public class RpcClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        RpcRequest rpcRequest = RpcRequest.builder()
-                .interfaceName(method.getDeclaringClass().getName())  //接口名称
-                .methodName(method.getName())                         //接口中所调用的方法名称
-                .parameters(args)                                     //方法中的参数名称
-                .paramTypes(method.getParameterTypes())               //方法中的参数类型
-                .build();
-        RpcClient rpcClient = new RpcClient();
-        return ((RpcResponse)rpcClient.sendRequest(rpcRequest, host, port)).getData();
+        logger.info("调用方法：{}#{}",method.getDeclaringClass().getName(),method.getName());
+        RpcRequest rpcRequest = new RpcRequest(UUID.randomUUID().toString(),method.getDeclaringClass().getName(),
+               method.getName(),args,method.getParameterTypes(),false);
+        RpcResponse rpcResponse = null;
+        if (client instanceof NettyClient){
+            try {
+//                CompletableFuture<RpcResponse> completableFuture = (CompletableFuture<RpcResponse>) client.sendRequest(rpcRequest);
+//                rpcResponse = completableFuture.get();
+                //rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
+                return  client.sendRequest(rpcRequest);
+            }catch (Exception e){
+                logger.error("方法调用请求发送失败", e);
+                return null;
+            }
+        }
+        if (client instanceof SocketClient){
+            rpcResponse = (RpcResponse) client.sendRequest(rpcRequest);
+        }
+        RpcMessageChecker.check(rpcRequest,rpcResponse);
+        return rpcResponse.getData();
+
     }
 }

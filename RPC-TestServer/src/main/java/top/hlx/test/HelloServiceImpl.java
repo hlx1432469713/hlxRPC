@@ -5,10 +5,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.hlx.rpc.HelloObject;
 import top.hlx.rpc.HelloService;
+import top.hlx.rpc.annotation.Service;
 
 /**
  *   HelloService的实现类，该类只存在于服务端中，客户端只能通过去调用服务端中的实现类才能获取结果
  */
+@Service
 public class HelloServiceImpl implements HelloService {
     /**
      * static修饰的属性强调它们只有一个，
